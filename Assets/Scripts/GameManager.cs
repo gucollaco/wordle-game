@@ -58,7 +58,24 @@ public class GameManager : MonoBehaviour
     // Confirms the current row, and goes to the next one.
     public void NextRow()
     {
-        characterIndex = 0;
-        rowIndex++;
+        if (characterIndex == maxLettersQuantity)
+        {
+            characterIndex = 0;
+            rowIndex++;
+        }
     }
+
+    // Returns the current character index value.
+    public int GetCharacterIndex()
+    {
+        return characterIndex;
+    }
+
+    // Returns the max letter quantity value.
+    public int GetMaxLettersQuantity()
+    {
+        return maxLettersQuantity;
+    }
+
+    
 }

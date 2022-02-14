@@ -10,6 +10,8 @@ public class KeyboardManager : MonoBehaviour
     private GameObject keyboard;
     private string[] characters;
     private GameManager gameManager;
+    public Button backspaceButton;
+    public Button confirmButton;
 
     // Start is called before the first frame update.
     private void Start()
@@ -28,11 +30,11 @@ public class KeyboardManager : MonoBehaviour
             if (i == 0)
             {
                 Transform backspace = row.transform.GetChild(0);
-                Button backspaceButton = backspace.GetComponent<Button>();
+                backspaceButton = backspace.GetComponent<Button>();
                 backspaceButton.onClick.AddListener(BackspaceKeyClick);
 
                 Transform confirm = row.transform.GetChild(1);
-                Button confirmButton = confirm.GetComponent<Button>();
+                confirmButton = confirm.GetComponent<Button>();
                 confirmButton.onClick.AddListener(ConfirmKeyClick);
             }
             // Character buttons.
@@ -67,17 +69,35 @@ public class KeyboardManager : MonoBehaviour
     private void CharacterKeyClick(string letter)
     {
         gameManager.DisplayLetter(letter);
+        
+        // Backspace button gets enabled when we have at least one character.
+        backspaceButton.interactable = true;
+
+        // Confirm button gets enabled when all word letters are filled.
+        if (gameManager.GetCharacterIndex() == gameManager.GetMaxLettersQuantity())
+            confirmButton.interactable = true;
     }
 
     // Used to define what a backspace key click should do.
     private void BackspaceKeyClick()
     {
         gameManager.UndoLastCharacter();
+
+        // Confirm button gets disabled when not all required characters are informed.
+        confirmButton.interactable = false;
+
+        // Backspace button gets disabled when there are no letters informed.
+        if (gameManager.GetCharacterIndex() == 0)
+            backspaceButton.interactable = false;
     }
 
     // Used to define what a confirm key click should do.
     private void ConfirmKeyClick()
     {
         gameManager.NextRow();
+
+        // Upon confirming, disables both backspace and confirm buttons, for the next row reset.
+        backspaceButton.interactable = false;
+        confirmButton.interactable = false;
     }
 }

@@ -2322,7 +2322,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 538429685}
   m_OnClick:
     m_PersistentCalls:
@@ -2871,7 +2871,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 649450571}
   m_OnClick:
     m_PersistentCalls:
@@ -3120,6 +3120,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8cb91d4c1add1eed1bd4ca18cb2f1a63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  backspaceButton: {fileID: 0}
+  confirmButton: {fileID: 0}
 --- !u!4 &825539305
 Transform:
   m_ObjectHideFlags: 0
