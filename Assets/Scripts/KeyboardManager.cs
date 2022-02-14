@@ -8,12 +8,15 @@ public class KeyboardManager : MonoBehaviour
 {
     private GameObject keyboard;
     private string[] characters;
+    private GameManager gameManager;
 
-    void Start()
+    // Start is called before the first frame update.
+    private void Start()
     {
         InitializeCharacterList();
 
         keyboard = GameObject.Find("Keyboard");
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         // Go through each keyboard row.
         for(int i = 0; i < keyboard.transform.childCount; i++)
@@ -39,18 +42,14 @@ public class KeyboardManager : MonoBehaviour
                 {
                     Transform letter = row.transform.GetChild(j);
                     TextMeshProUGUI letterText = letter.GetChild(0).GetComponent<TextMeshProUGUI>();
-                    string text = characters[i-1][j].ToString();
+                    int characterRowIndex = i - 1;
+                    string text = characters[characterRowIndex][j].ToString();
                     letterText.text = text;
                     Button letterButton = letter.GetComponent<Button>();
                     letterButton.onClick.AddListener(() => CharacterKeyClick(text));
                 }
             }
         }
-    }
-
-    void Update()
-    {
-        
     }
 
     // Initializing the characters string array.
@@ -65,7 +64,7 @@ public class KeyboardManager : MonoBehaviour
 
     private void CharacterKeyClick(string letter)
     {
-        Debug.Log(letter);
+        gameManager.DisplayLetter(letter);
     }
 
     private void BackspaceKeyClick()
