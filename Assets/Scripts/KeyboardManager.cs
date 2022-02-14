@@ -6,6 +6,7 @@ using TMPro;
 
 public class KeyboardManager : MonoBehaviour
 {
+    // Used variables.
     private GameObject keyboard;
     private string[] characters;
     private GameManager gameManager;
@@ -62,18 +63,21 @@ public class KeyboardManager : MonoBehaviour
         characters[2] = "ZXCVBNM";
     }
 
+    // Used to define what a character key click should do.
     private void CharacterKeyClick(string letter)
     {
         gameManager.DisplayLetter(letter);
     }
 
+    // Used to define what a backspace key click should do.
     private void BackspaceKeyClick()
     {
-        Debug.Log("Backspace clicked");
+        gameManager.UndoLastCharacter();
     }
 
+    // Used to define what a confirm key click should do.
     private void ConfirmKeyClick()
     {
-        Debug.Log("Confirm clicked");
+        gameManager.NextRow();
     }
 }
