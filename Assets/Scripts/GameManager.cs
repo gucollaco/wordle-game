@@ -10,7 +10,6 @@ using TMPro;
 public class GameManager : MonoBehaviour
 {
     // Used variables.
-    public string currentGuess;
     public string randomWord;
     public GameObject gameEndPanel;
     public TextMeshProUGUI gameEndText;
@@ -21,14 +20,23 @@ public class GameManager : MonoBehaviour
     private int maxLettersQuantity;
     private bool isGameActive;
     private List<string> possibleWords;
+    private List<Button> currentGuessButtons;
+    private string currentGuess;
 
     // Start is called before the first frame update.
     private void Start()
     {
-        InitializePossibleWords();
+        InitializeLists();
         randomWord = GetRandomWord();
-        InitializeWordRows();
         ResetVariables();
+    }
+
+    // Initializes the used lists.
+    private void InitializeLists()
+    {
+        currentGuessButtons = new List<Button>();
+        InitializePossibleWords();
+        InitializeWordRows();
     }
 
 
@@ -59,7 +67,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Displays the selected character key at the "guess word" letter box.
-    public void DisplayLetter(string letterValue)
+    public void DisplayLetter(string letterValue, Button button)
     {
         if (characterIndex < maxLettersQuantity)
         {
@@ -67,7 +75,9 @@ public class GameManager : MonoBehaviour
             Transform letter = wordRow.transform.GetChild(characterIndex);
             TextMeshProUGUI letterText = letter.GetChild(0).GetComponent<TextMeshProUGUI>();
             letterText.text = letterValue;
+            
             currentGuess += letterValue;
+            currentGuessButtons.Add(button);
 
             characterIndex++;
         }
@@ -84,7 +94,9 @@ public class GameManager : MonoBehaviour
             Transform letter = wordRow.transform.GetChild(characterIndex);
             TextMeshProUGUI letterText = letter.GetChild(0).GetComponent<TextMeshProUGUI>();
             letterText.text = string.Empty;
+
             currentGuess = currentGuess.Remove(currentGuess.Length - 1); 
+            currentGuessButtons.RemoveAt(currentGuessButtons.Count - 1);
         }
     }
 
@@ -100,6 +112,7 @@ public class GameManager : MonoBehaviour
             characterIndex = 0;
             rowIndex++;
             currentGuess = string.Empty;
+            currentGuessButtons.Clear();
 
             if (hasWon)
                 GameEndWon();
@@ -115,7 +128,10 @@ public class GameManager : MonoBehaviour
         // Iterate through each letter of the guessed used input.
         for (int i = 0; i < currentGuess.Length; i++)
         {
+            // Getting reference to the images, which will have their color changed.
+            Image keyboardButtonImage = currentGuessButtons[i].GetComponent<Image>();
             Transform letter = wordRow.transform.GetChild(i);
+            Image letterImage = letter.GetComponent<Image>();
 
             // If random word contains the current guessed letter.
             if (randomWord.Contains(currentGuess[i]))
@@ -123,16 +139,29 @@ public class GameManager : MonoBehaviour
                 // If letter is at the expected position.
                 if (randomWord[i].Equals(currentGuess[i]))
                 {
-                    letter.GetComponent<Image>().color = Color.green;
+                    // Setting both keyboard and letter box as green.
+                    letterImage.color = Color.green;
+                    keyboardButtonImage.color = Color.green;
+
                     correctPositions++;
                 }
                 // If letter is not at the expected position.
                 else
-                    letter.GetComponent<Image>().color = Color.yellow;
+                {
+                    // Setting letter box as yellow.
+                    letterImage.color = Color.yellow;
+
+                    // Only sets keyboard as yellow in case it has not been green already.
+                    if (keyboardButtonImage.color != Color.green)
+                        keyboardButtonImage.color = Color.yellow;
+                }
             }
             // If guessed letter is not present on the random word.
             else
-                letter.GetComponent<Image>().color = Color.grey;
+            {
+                letterImage.color = Color.grey;
+                keyboardButtonImage.color = Color.grey;
+            }
         }
 
         // The user wins in case correctPositions match the word length.
@@ -151,9 +180,7 @@ public class GameManager : MonoBehaviour
 
         // Add words into the list
         foreach (string word in words)
-        {
             list.Add(word);
-        }
 
         // Close the reader.
         reader.Close();

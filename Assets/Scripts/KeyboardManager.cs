@@ -44,7 +44,7 @@ public class KeyboardManager : MonoBehaviour
                     string text = characters[characterRowIndex][j].ToString();
                     letterText.text = text;
                     Button letterButton = letter.GetComponent<Button>();
-                    letterButton.onClick.AddListener(() => CharacterKeyClick(text));
+                    letterButton.onClick.AddListener(() => CharacterKeyClick(text, letterButton));
                     characterButtons.Add(letterButton);
                 }
             }
@@ -62,9 +62,9 @@ public class KeyboardManager : MonoBehaviour
     }
 
     // Used to define what a character key click should do.
-    private void CharacterKeyClick(string letter)
+    private void CharacterKeyClick(string letter, Button buttonElement)
     {
-        gameManager.DisplayLetter(letter);
+        gameManager.DisplayLetter(letter, buttonElement);
         
         // Backspace button gets enabled when we have at least one character.
         backspaceButton.interactable = true;
