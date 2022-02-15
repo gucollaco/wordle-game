@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,22 +20,42 @@ public class GameManager : MonoBehaviour
     private int rowIndex;
     private int maxLettersQuantity;
     private bool isGameActive;
+    private List<string> possibleWords;
 
     // Start is called before the first frame update.
     private void Start()
     {
+        InitializePossibleWords();
         randomWord = GetRandomWord();
-        wordRows = new List<Transform>();
+        InitializeWordRows();
+        ResetVariables();
+    }
 
+
+    // Initializes the possible words list.
+    private void InitializePossibleWords()
+    {
+        possibleWords = new List<string>();
+        string path = "Assets/Resources/wordsList.txt";
+        ReadWords(path, possibleWords);
+    }
+
+    // Initializes the word rows list.
+    private void InitializeWordRows()
+    {
+        wordRows = new List<Transform>();
         foreach (Transform child in words.transform)
             wordRows.Add(child);
+    }
 
+    // Resets some variables once the game begins/restarts.
+    private void ResetVariables()
+    {
         characterIndex = 0;
         rowIndex = 0;
         maxLettersQuantity = 5;
         currentGuess = string.Empty;
         isGameActive = true;
-
     }
 
     // Displays the selected character key at the "guess word" letter box.
@@ -118,6 +139,26 @@ public class GameManager : MonoBehaviour
         return correctPositions == currentGuess.Length;
     }
 
+    // Gets the words from a file, and adds into a list.
+    private void ReadWords(string path, List<string> list)
+    {
+        // Read the text from the file.
+        StreamReader reader = new StreamReader(path);
+        string text = reader.ReadToEnd();
+
+        // Separate them for each ',' character
+        string[] words = text.Split(',');
+
+        // Add words into the list
+        foreach (string word in words)
+        {
+            list.Add(word);
+        }
+
+        // Close the reader.
+        reader.Close();
+    }
+
     // Called when the user loses the game. Shows UI that displays the answer, and lets the user restart the game.
     private void GameEndLost()
     {
@@ -151,8 +192,8 @@ public class GameManager : MonoBehaviour
     // Gets a random word to be discovered.
     public string GetRandomWord()
     {
-        return "GREAT";
-    }  
+        return possibleWords[Random.Range(0, possibleWords.Count)];
+    }
 
     // Returns the game active state.
     public bool getIsGameActive()
