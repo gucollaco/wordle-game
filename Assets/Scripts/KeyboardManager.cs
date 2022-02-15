@@ -7,19 +7,19 @@ using TMPro;
 public class KeyboardManager : MonoBehaviour
 {
     // Used variables.
-    private GameObject keyboard;
-    private string[] characters;
-    private GameManager gameManager;
+    public GameObject keyboard;
+    public GameManager gameManager;
     public Button backspaceButton;
     public Button confirmButton;
+    private string[] characters;
+    private List<Button> characterButtons;
 
     // Start is called before the first frame update.
     private void Start()
     {
         InitializeCharacterList();
 
-        keyboard = GameObject.Find("Keyboard");
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        characterButtons = new List<Button>();
 
         // Go through each keyboard row.
         for(int i = 0; i < keyboard.transform.childCount; i++)
@@ -29,12 +29,7 @@ public class KeyboardManager : MonoBehaviour
             // Backspace and enter buttons.
             if (i == 0)
             {
-                Transform backspace = row.transform.GetChild(0);
-                backspaceButton = backspace.GetComponent<Button>();
                 backspaceButton.onClick.AddListener(BackspaceKeyClick);
-
-                Transform confirm = row.transform.GetChild(1);
-                confirmButton = confirm.GetComponent<Button>();
                 confirmButton.onClick.AddListener(ConfirmKeyClick);
             }
             // Character buttons.
@@ -50,6 +45,7 @@ public class KeyboardManager : MonoBehaviour
                     letterText.text = text;
                     Button letterButton = letter.GetComponent<Button>();
                     letterButton.onClick.AddListener(() => CharacterKeyClick(text));
+                    characterButtons.Add(letterButton);
                 }
             }
         }
@@ -99,5 +95,14 @@ public class KeyboardManager : MonoBehaviour
         // Upon confirming, disables both backspace and confirm buttons, for the next row reset.
         backspaceButton.interactable = false;
         confirmButton.interactable = false;
+
+        // If game finished, disables all charater buttons.
+        // if (!gameManager.getIsGameActive())
+        // {
+        //     foreach (Button button in characterButtons)
+        //     {
+        //         button.interactable = false;
+        //     }
+        // }
     }
 }

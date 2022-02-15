@@ -2,24 +2,28 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     // Used variables.
-    private GameObject words;
+    public string currentGuess;
+    public string randomWord;
+    public GameObject gameEndPanel;
+    public TextMeshProUGUI gameEndText;
+    public GameObject words;
     private List<Transform> wordRows;
     private int characterIndex;
     private int rowIndex;
     private int maxLettersQuantity;
-    public string currentGuess;
-    public string randomWord;
+    private bool isGameActive;
 
     // Start is called before the first frame update.
     private void Start()
     {
         randomWord = GetRandomWord();
-        words = GameObject.Find("Words");
         wordRows = new List<Transform>();
 
         foreach (Transform child in words.transform)
@@ -29,6 +33,8 @@ public class GameManager : MonoBehaviour
         rowIndex = 0;
         maxLettersQuantity = 5;
         currentGuess = string.Empty;
+        isGameActive = true;
+
     }
 
     // Displays the selected character key at the "guess word" letter box.
@@ -64,18 +70,70 @@ public class GameManager : MonoBehaviour
     // Confirms the current row, and goes to the next one.
     public void ConfirmRow()
     {
-        if (characterIndex == maxLettersQuantity)
+        if (rowIndex == wordRows.Count - 1)
+            GameEndLost();
+        else if (characterIndex == maxLettersQuantity)
         {
-            CompareTarget();
+            bool hasWon = CompareTarget();
+
             characterIndex = 0;
             rowIndex++;
             currentGuess = string.Empty;
+
+            if (hasWon)
+                GameEndWon();
         }
     }
 
-    public void CompareTarget()
+    // Compares the guess with the selected random word. Returns true in case the user discovers the hidden word.
+    private bool CompareTarget()
     {
-        // if ()
+        int correctPositions = 0;
+        Transform wordRow = wordRows[rowIndex];
+
+        // Iterate through each letter of the guessed used input.
+        for (int i = 0; i < currentGuess.Length; i++)
+        {
+            Transform letter = wordRow.transform.GetChild(i);
+
+            // If random word contains the current guessed letter.
+            if (randomWord.Contains(currentGuess[i]))
+            {
+                // If letter is at the expected position.
+                if (randomWord[i].Equals(currentGuess[i]))
+                {
+                    letter.GetComponent<Image>().color = Color.green;
+                    correctPositions++;
+                }
+                // If letter is not at the expected position.
+                else
+                    letter.GetComponent<Image>().color = Color.yellow;
+            }
+            // If guessed letter is not present on the random word.
+            else
+                letter.GetComponent<Image>().color = Color.grey;
+        }
+
+        // The user wins in case correctPositions match the word length.
+        return correctPositions == currentGuess.Length;
+    }
+
+    // Called when the user loses the game. Shows UI that displays the answer, and lets the user restart the game.
+    private void GameEndLost()
+    {
+        string lostText = $"You lost :(\n\nThe word was: \"{randomWord}\"";
+        gameEndText.text = lostText;
+        isGameActive = false;
+        gameEndPanel.SetActive(true);
+    }
+
+    // Called when the user wins the game. Shows UI that displays the answer, and lets the user restart the game.
+    private void GameEndWon()
+    {
+        string lostText = $"You won :)\n\nThe word was: \"{randomWord}\"";
+        gameEndText.text = lostText;
+        isGameActive = false;
+        gameEndPanel.SetActive(true);
     }
 
     // Returns the current character index value.
@@ -90,8 +148,21 @@ public class GameManager : MonoBehaviour
         return maxLettersQuantity;
     }
 
+    // Gets a random word to be discovered.
     public string GetRandomWord()
     {
         return "GREAT";
-    }    
+    }  
+
+    // Returns the game active state.
+    public bool getIsGameActive()
+    {
+        return isGameActive;
+    }
+
+    // Restarts the game by restarting the scene.
+    public void GameRestart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }
