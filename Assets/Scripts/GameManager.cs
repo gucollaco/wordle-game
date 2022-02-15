@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using TMPro;
 
@@ -11,10 +12,13 @@ public class GameManager : MonoBehaviour
     private int characterIndex;
     private int rowIndex;
     private int maxLettersQuantity;
+    public string currentGuess;
+    public string randomWord;
 
     // Start is called before the first frame update.
     private void Start()
     {
+        randomWord = GetRandomWord();
         words = GameObject.Find("Words");
         wordRows = new List<Transform>();
 
@@ -24,6 +28,7 @@ public class GameManager : MonoBehaviour
         characterIndex = 0;
         rowIndex = 0;
         maxLettersQuantity = 5;
+        currentGuess = string.Empty;
     }
 
     // Displays the selected character key at the "guess word" letter box.
@@ -35,6 +40,7 @@ public class GameManager : MonoBehaviour
             Transform letter = wordRow.transform.GetChild(characterIndex);
             TextMeshProUGUI letterText = letter.GetChild(0).GetComponent<TextMeshProUGUI>();
             letterText.text = letterValue;
+            currentGuess += letterValue;
 
             characterIndex++;
         }
@@ -51,18 +57,25 @@ public class GameManager : MonoBehaviour
             Transform letter = wordRow.transform.GetChild(characterIndex);
             TextMeshProUGUI letterText = letter.GetChild(0).GetComponent<TextMeshProUGUI>();
             letterText.text = string.Empty;
-
+            currentGuess = currentGuess.Remove(currentGuess.Length - 1); 
         }
     }
 
     // Confirms the current row, and goes to the next one.
-    public void NextRow()
+    public void ConfirmRow()
     {
         if (characterIndex == maxLettersQuantity)
         {
+            CompareTarget();
             characterIndex = 0;
             rowIndex++;
+            currentGuess = string.Empty;
         }
+    }
+
+    public void CompareTarget()
+    {
+        // if ()
     }
 
     // Returns the current character index value.
@@ -77,5 +90,8 @@ public class GameManager : MonoBehaviour
         return maxLettersQuantity;
     }
 
-    
+    public string GetRandomWord()
+    {
+        return "GREAT";
+    }    
 }
