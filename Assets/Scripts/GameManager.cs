@@ -103,9 +103,7 @@ public class GameManager : MonoBehaviour
     // Confirms the current row, and goes to the next one.
     public void ConfirmRow()
     {
-        if (rowIndex == wordRows.Count - 1)
-            GameEndLost();
-        else if (characterIndex == maxLettersQuantity)
+        if (characterIndex == maxLettersQuantity)
         {
             bool hasWon = CompareTarget();
 
@@ -114,8 +112,12 @@ public class GameManager : MonoBehaviour
             currentGuess = string.Empty;
             currentGuessButtons.Clear();
 
+            // Checks if user won.
             if (hasWon)
                 GameEndWon();
+            // Checks if user lost.
+            else if (rowIndex == wordRows.Count)
+                GameEndLost();
         }
     }
 
