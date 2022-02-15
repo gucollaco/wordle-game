@@ -97,12 +97,10 @@ public class KeyboardManager : MonoBehaviour
         confirmButton.interactable = false;
 
         // If game finished, disables all charater buttons.
-        // if (!gameManager.getIsGameActive())
-        // {
-        //     foreach (Button button in characterButtons)
-        //     {
-        //         button.interactable = false;
-        //     }
-        // }
+        if (!gameManager.getIsGameActive())
+        {
+            foreach (Button button in characterButtons)
+                button.interactable = false;
+        }
     }
 }
