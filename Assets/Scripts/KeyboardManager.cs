@@ -90,10 +90,11 @@ public class KeyboardManager : MonoBehaviour
     // Used to define what a confirm key click should do.
     private void ConfirmKeyClick()
     {
-        gameManager.ConfirmRow();
+        bool isGuessValid = gameManager.ConfirmRow();
 
-        // Upon confirming, disables both backspace and confirm buttons, for the next row reset.
-        backspaceButton.interactable = false;
+        // Upon confirming, disables both backspace and confirm buttons, for the next row reset. When guess is invalid, backspace button will not be disabled.
+        if (isGuessValid)
+            backspaceButton.interactable = false;
         confirmButton.interactable = false;
 
         // If game finished, disables all charater buttons.

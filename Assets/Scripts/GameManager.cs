@@ -5,12 +5,15 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEditor;
 using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     // Used variables.
     public string randomWord;
+    public GameObject invalidWordPanel;
+    public TextMeshProUGUI invalidWordText;
     public GameObject gameEndPanel;
     public TextMeshProUGUI gameEndText;
     public GameObject words;
@@ -19,7 +22,8 @@ public class GameManager : MonoBehaviour
     private int rowIndex;
     private int maxLettersQuantity;
     private bool isGameActive;
-    private List<string> possibleWords;
+    private List<string> possibleGuesses;
+    private List<string> possibleAnswers;
     private List<Button> currentGuessButtons;
     private string currentGuess;
 
@@ -35,17 +39,26 @@ public class GameManager : MonoBehaviour
     private void InitializeLists()
     {
         currentGuessButtons = new List<Button>();
-        InitializePossibleWords();
+        InitializePossibleAnswers();
+        InitializePossibleGuesses();
         InitializeWordRows();
     }
 
-
-    // Initializes the possible words list.
-    private void InitializePossibleWords()
+    // Initializes the possible answers list.
+    private void InitializePossibleAnswers()
     {
-        possibleWords = new List<string>();
+        possibleAnswers = new List<string>();
+        string path = "Assets/Resources/answersList.txt";
+        ReadWords(path, possibleAnswers);
+    }
+
+    // Initializes the possible guesses list, adding the possibleAnswers elements into it.
+    private void InitializePossibleGuesses()
+    {
+        possibleGuesses = new List<string>();
         string path = "Assets/Resources/wordsList.txt";
-        ReadWords(path, possibleWords);
+        ReadWords(path, possibleGuesses);
+        possibleGuesses = possibleGuesses.Concat(possibleAnswers).ToList();
     }
 
     // Initializes the word rows list.
@@ -100,10 +113,18 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Confirms the current row, and goes to the next one.
-    public void ConfirmRow()
+    // Confirms the current row, and goes to the next one. Returns false when guess is invalid, and true when guess is valid.
+    public bool ConfirmRow()
     {
-        if (characterIndex == maxLettersQuantity)
+        // Checks if the guess is a possible guess.
+        if (!possibleGuesses.Contains(currentGuess))
+        {
+            invalidWordText.text = "Invalid word :(";
+            invalidWordPanel.SetActive(true);
+            return false;
+        }
+        // In this case, we can compare the guessed word with the hidden word.
+        else
         {
             bool hasWon = CompareTarget();
 
@@ -118,7 +139,16 @@ public class GameManager : MonoBehaviour
             // Checks if user lost.
             else if (rowIndex == wordRows.Count)
                 GameEndLost();
+
+            return true;
         }
+    }
+
+    // Method to close the popup (dialog panel).
+    public void ClosePopup()
+    {
+        invalidWordPanel.SetActive(false);
+        invalidWordText.text = string.Empty;
     }
 
     // Compares the guess with the selected random word. Returns true in case the user discovers the hidden word.
@@ -182,7 +212,7 @@ public class GameManager : MonoBehaviour
 
         // Add words into the list
         foreach (string word in words)
-            list.Add(word);
+            list.Add(word.ToUpper());
 
         // Close the reader.
         reader.Close();
@@ -221,7 +251,7 @@ public class GameManager : MonoBehaviour
     // Gets a random word to be discovered.
     public string GetRandomWord()
     {
-        return possibleWords[Random.Range(0, possibleWords.Count)];
+        return possibleAnswers[Random.Range(0, possibleAnswers.Count)];
     }
 
     // Returns the game active state.
