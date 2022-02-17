@@ -180,12 +180,31 @@ public class GameManager : MonoBehaviour
                 // If letter is not at the expected position.
                 else
                 {
-                    // Setting letter box as yellow.
-                    letterImage.color = Color.yellow;
+                    // Checking how many of this character is present on the random word.
+                    char currentLetter = currentGuess[i];
+                    int letterOccurences = randomWord.Count(letter => (letter == currentLetter));
 
-                    // Only sets keyboard as yellow in case it has not been green already.
-                    if (keyboardButtonImage.color != Color.green)
-                        keyboardButtonImage.color = Color.yellow;
+                    // Checking how many of this character has already been checked.
+                    int occurencesConsidered = 0;
+                    for (int j = 0; j < i; j++)
+                        if (currentGuess[j] == currentLetter)
+                            occurencesConsidered++;
+                    
+                    // If there are still occurences to consider, color it.
+                    if (occurencesConsidered < letterOccurences)
+                    {
+                        // Setting letter box as yellow.
+                        letterImage.color = Color.yellow;
+
+                        // Only sets keyboard as yellow in case it has not been green already.
+                        if (keyboardButtonImage.color != Color.green)
+                            keyboardButtonImage.color = Color.yellow;
+                    }
+                    // Else, paint it grey.
+                    else
+                    {
+                        letterImage.color = Color.grey;
+                    }
                 }
             }
             // If guessed letter is not present on the random word.
