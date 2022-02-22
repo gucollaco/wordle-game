@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     public GameObject gameEndPanel;
     public TextMeshProUGUI gameEndText;
     public GameObject words;
-    private List<Transform> wordRows;
+    public List<Transform> wordRows;
     private int characterIndex;
     private int rowIndex;
     private int maxLettersQuantity;
@@ -27,12 +27,25 @@ public class GameManager : MonoBehaviour
     private List<Button> currentGuessButtons;
     private string currentGuess;
 
+    private List<string> possibleGuessesClone;
+    private List<string> possibleAnswersUpdated;
+    private List<string> guessesToConsider;
+    private float mininumAverage;
+    private string chosenGuess;
+
     // Start is called before the first frame update.
     private void Start()
     {
         InitializeLists();
         randomWord = GetRandomWord();
         ResetVariables();
+
+        possibleGuessesClone = new List<string>(possibleGuesses);
+        possibleAnswersUpdated = new List<string>(possibleAnswers);
+        guessesToConsider = new List<string>();
+        
+        mininumAverage = 1000000;
+        chosenGuess = "";
     }
 
     // Initializes the used lists.
@@ -283,5 +296,168 @@ public class GameManager : MonoBehaviour
     public void GameRestart()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    // Method to solve wordle by itself.
+    public string NextWordGuess()
+    {
+        mininumAverage = 1000000;
+        chosenGuess = "";
+        Dictionary<string, List<string>> evaluationToWords = new Dictionary<string, List<string>>();
+
+        // If not the first iteration, consider all possible guesses
+        if (rowIndex > 0)
+            guessesToConsider = new List<string>(possibleGuesses);
+        // If it is the first iteration, let's consider some reduced possible guess.
+        else
+        {
+            guessesToConsider = new List<string>();
+            string[] someGoodWords = { "ARISE", "CRANE", "TEARS", "CARET" };
+            foreach (string word in someGoodWords)
+                guessesToConsider.Add(word);
+        }
+
+        foreach (string guessToConsider in guessesToConsider)
+        {
+            Dictionary<string, List<string>> temporaryEvaluationToWords = new Dictionary<string, List<string>>();
+
+            foreach (string possibleAnswer in possibleAnswersUpdated)
+            {
+                string evaluation = GetEvaluation(possibleAnswer, guessToConsider);
+
+                // If we already have a word with this evaluation key, we add this value to the list
+                if (temporaryEvaluationToWords.ContainsKey(evaluation))
+                {
+                    temporaryEvaluationToWords[evaluation].Add(possibleAnswer);
+                }
+                // If this is the first word with this evaluation.
+                else
+                {
+                    List<string> newKeyList = new List<string>();
+                    newKeyList.Add(possibleAnswer);
+                    temporaryEvaluationToWords.Add(evaluation, newKeyList);
+                }
+            }
+
+            // Getting the average of the possible words count, when using this guess, compared to the possible answers.
+            int totalPossibilitiesSum = 0;
+            foreach (List<string> value in temporaryEvaluationToWords.Values)
+                totalPossibilitiesSum += value.Count;
+            float averageRemainingWords = totalPossibilitiesSum / temporaryEvaluationToWords.Count;
+            
+            if (averageRemainingWords < mininumAverage)
+            {
+                mininumAverage = averageRemainingWords;
+                chosenGuess = guessToConsider;
+
+                evaluationToWords = temporaryEvaluationToWords;
+            }
+        }
+
+        possibleAnswersUpdated = evaluationToWords[GetEvaluation(randomWord, chosenGuess)];
+
+        if (possibleAnswersUpdated.Count == 1)
+            return possibleAnswersUpdated[0];
+        return chosenGuess;
+    }
+    
+
+    // Method to solve wordle by itself.
+    public void Solve()
+    {
+        List<string> possibleGuessesClone = new List<string>(possibleGuesses);
+        List<string> possibleAnswersUpdated = new List<string>(possibleAnswers);
+        List<string> guessesToConsider = new List<string>();
+        
+        for (int i = 0; i < wordRows.Count; i++)
+        {
+            float mininumAverage = 1000000;
+            string chosenGuess = "";
+            Dictionary<string, List<string>> evaluationToWords = new Dictionary<string, List<string>>();
+
+            // If not the first iteration, consider all possible guesses
+            if (i > 0)
+            {
+                guessesToConsider = possibleGuessesClone;
+            }
+            // If it is the first iteration, let's consider a fixed guess.
+            else
+            {
+                guessesToConsider = new List<string>();
+                guessesToConsider.Add("ARISE");
+            }
+
+            foreach (string guessToConsider in guessesToConsider)
+            {
+                Dictionary<string, List<string>> temporaryEvaluationToWords = new Dictionary<string, List<string>>();
+
+                foreach (string possibleAnswer in possibleAnswersUpdated)
+                {
+                    string evaluation = GetEvaluation(possibleAnswer, guessToConsider);
+
+                    // If we already have a word with this evaluation key, we add this value to the list
+                    if (temporaryEvaluationToWords.ContainsKey(evaluation))
+                    {
+                        temporaryEvaluationToWords[evaluation].Add(possibleAnswer);
+                    }
+                    // If this is the first word with this evaluation.
+                    else
+                    {
+                        List<string> newKeyList = new List<string>();
+                        newKeyList.Add(possibleAnswer);
+                        temporaryEvaluationToWords.Add(evaluation, newKeyList);
+                    }
+                }
+
+                // Getting the average of the possible words count, when using this guess, compared to the possible answers.
+                int totalPossibilitiesSum = 0;
+                foreach (List<string> value in temporaryEvaluationToWords.Values)
+                    totalPossibilitiesSum += value.Count;
+                float averageRemainingWords = totalPossibilitiesSum / temporaryEvaluationToWords.Count;
+                
+                // int max = 0;
+                // foreach (List<string> value in temporaryEvaluationToWords.Values)
+                //     if (max < value.Count)
+                //         max = value.Count;
+                // float averageRemainingWords = max;
+                
+                if (averageRemainingWords < mininumAverage)
+                {
+                    mininumAverage = averageRemainingWords;
+                    chosenGuess = guessToConsider;
+
+                    evaluationToWords = temporaryEvaluationToWords;
+                }
+            }
+
+            possibleAnswersUpdated = evaluationToWords[GetEvaluation(randomWord, chosenGuess)];
+
+            if (possibleAnswersUpdated.Count == 1)
+                return ;
+            Debug.Log("Chosen guess");
+            Debug.Log(chosenGuess);
+            Debug.Log(GetEvaluation(randomWord, chosenGuess));
+            Debug.Log(possibleAnswersUpdated[0]);
+        }
+    }
+
+    // Evaluates two words
+    private string GetEvaluation(string answer, string guess)
+    {
+        int[] evaluation = { 0, 0, 0, 0, 0 };
+
+        for (int i = 0; i < answer.Length; i++)
+        {
+            if (answer[i] == guess[i])
+                evaluation[i] = 2;
+        }
+
+        for (int i = 0; i < answer.Length; i++)
+        {
+            if (answer.Contains(guess[i]) && evaluation[i] == 0)
+                evaluation[i] = 1;
+        }
+
+        return string.Join(string.Empty, evaluation);
     }
 }

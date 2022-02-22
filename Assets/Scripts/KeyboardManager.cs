@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -11,15 +12,16 @@ public class KeyboardManager : MonoBehaviour
     public GameManager gameManager;
     public Button backspaceButton;
     public Button confirmButton;
+    public Button solveButton;
     private string[] characters;
-    private List<Button> characterButtons;
+    private Dictionary<string, Button> characterButtons;
 
     // Start is called before the first frame update.
     private void Start()
     {
         InitializeCharacterList();
 
-        characterButtons = new List<Button>();
+        characterButtons = new Dictionary<string, Button>();
 
         // Go through each keyboard row.
         for(int i = 0; i < keyboard.transform.childCount; i++)
@@ -45,7 +47,7 @@ public class KeyboardManager : MonoBehaviour
                     letterText.text = text;
                     Button letterButton = letter.GetComponent<Button>();
                     letterButton.onClick.AddListener(() => CharacterKeyClick(text, letterButton));
-                    characterButtons.Add(letterButton);
+                    characterButtons.Add(text, letterButton);
                 }
             }
         }
@@ -97,11 +99,65 @@ public class KeyboardManager : MonoBehaviour
             backspaceButton.interactable = false;
         confirmButton.interactable = false;
 
-        // If game finished, disables all charater buttons.
+        // If game finished, disables all character buttons.
         if (!gameManager.getIsGameActive())
         {
-            foreach (Button button in characterButtons)
+            foreach (Button button in characterButtons.Values)
                 button.interactable = false;
         }
+    }
+
+    // public void AutomaticSolve()
+    // {
+    //     for (int i = 0; i < gameManager.wordRows.Count; i++)
+    //     {
+    //         string guessedWord = gameManager.NextWordGuess();
+    //         foreach (char letter in guessedWord)
+    //         {
+    //             Button letterButton = characterButtons[letter.ToString()];
+    //             CharacterKeyClick(letter.ToString(), letterButton);
+    //         }
+    //         ConfirmKeyClick();
+
+    //         if (!gameManager.getIsGameActive())
+    //             break;
+    //     }
+    // }
+
+    public void AutomaticSolve()
+    {
+        DisableButtons();
+        StartCoroutine(SolvePuzzle());
+    }
+
+    private void DisableButtons()
+    {
+        foreach (Button button in characterButtons.Values)
+            button.interactable = false;
+        backspaceButton.interactable = false;
+        confirmButton.interactable = false;
+        solveButton.interactable = false;
+    }
+
+    // Method to solve the puzzle automatically.
+    public IEnumerator SolvePuzzle()
+    {
+        for (int i = 0; i < gameManager.wordRows.Count; i++)
+        {
+            string guessedWord = gameManager.NextWordGuess();
+            foreach (char letter in guessedWord)
+            {
+                Button letterButton = characterButtons[letter.ToString()];
+                CharacterKeyClick(letter.ToString(), letterButton);
+            }
+            ConfirmKeyClick();
+
+            yield return new WaitForSeconds(1f);
+
+            if (!gameManager.getIsGameActive())
+                break;
+        }
+
+        yield return null;
     }
 }
