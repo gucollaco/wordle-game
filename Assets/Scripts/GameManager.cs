@@ -274,6 +274,12 @@ public class GameManager : MonoBehaviour
         return characterIndex;
     }
 
+    // Returns the current row index value.
+    public int GetRowIndex()
+    {
+        return rowIndex;
+    }
+
     // Returns the max letter quantity value.
     public int GetMaxLettersQuantity()
     {
@@ -298,7 +304,7 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // Method to solve wordle by itself.
+    // Method to guess the next word.
     public string NextWordGuess()
     {
         mininumAverage = 1000000;
@@ -312,7 +318,7 @@ public class GameManager : MonoBehaviour
         else
         {
             guessesToConsider = new List<string>();
-            string[] someGoodWords = { "ARISE", "CRANE", "TEARS", "CARET" };
+            string[] someGoodWords = { "ARISE", "CRANE", "CARET" };
             foreach (string word in someGoodWords)
                 guessesToConsider.Add(word);
         }

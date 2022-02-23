@@ -71,6 +71,9 @@ public class KeyboardManager : MonoBehaviour
         // Backspace button gets enabled when we have at least one character.
         backspaceButton.interactable = true;
 
+        // Automatic solve button should be disabled when we have at least one character.
+        solveButton.interactable = false;
+
         // Confirm button gets enabled when all word letters are filled.
         if (gameManager.GetCharacterIndex() == gameManager.GetMaxLettersQuantity())
             confirmButton.interactable = true;
@@ -86,7 +89,13 @@ public class KeyboardManager : MonoBehaviour
 
         // Backspace button gets disabled when there are no letters informed.
         if (gameManager.GetCharacterIndex() == 0)
+        {
             backspaceButton.interactable = false;
+
+            // If we are still on the first word row, we enable the solve button.
+            if (gameManager.GetRowIndex() == 0)
+                solveButton.interactable = true;
+        }
     }
 
     // Used to define what a confirm key click should do.
@@ -130,6 +139,7 @@ public class KeyboardManager : MonoBehaviour
         StartCoroutine(SolvePuzzle());
     }
 
+    // Method to disable the buttons.
     private void DisableButtons()
     {
         foreach (Button button in characterButtons.Values)
